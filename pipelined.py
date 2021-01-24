@@ -67,22 +67,24 @@ def inst_mem(reset, read_addr, instruction):
 
 
 @block
-def ifid(reset, instruction, ifid_reg):
+def ifid(reset, instruction, ifid_reg, pc):
 
     @always_comb
     def reg():
         if reset.next == INACTIVE_HIGH:
-            ifid_reg.next = instruction
+            ifid_reg.next[CPU_BITS:0] = instruction
+            ifid_reg.next[IFID_REG_BITS:CPU_BITS] = pc
 
     return reg
 
 
 @block
 def cpu_top(clk, reset):
+
     pc, pc_addr, jmp_addr, read_addr, instruction = [signal(intbv(0)[CPU_BITS:]) for _ in range(5)]
     pc_sel = signal(intbv(0)[1:])
 
-    ifid_reg = signal(intbv(0)[CPU_BITS:])
+    ifid_reg = signal(intbv(0)[IFID_REG_BITS:])
 
     padr = pc_adder(reset, clk, pc, pc_addr)
     padr.convert(hdl='Verilog')
@@ -99,7 +101,7 @@ def cpu_top(clk, reset):
     imem = inst_mem(reset, read_addr, instruction)
     imem.convert(hdl='Verilog')
 
-    rfdi = ifid(reset, instruction, ifid_reg)
+    rfdi = ifid(reset, instruction, ifid_reg, pc)
     rfdi.convert(hdl='Verilog')
 
     return instances()

@@ -24,3 +24,6 @@ SUB = 6
 XOR = 7
 SRL = 8
 SRA = 9
+
+# Instruction fetch and decode register interface
+IFID_REG_BITS = CPU_BITS + CPU_BITS
